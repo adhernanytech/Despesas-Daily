@@ -37,7 +37,7 @@ Projeto desenvolvido com fins **académicos e de aprendizagem**.
 ```text
 com.universidade.project_form
 │
-├── modelos        → Modelos de dados (Despesa)
+├── 
 ├── ui
 │   ├── telas      → Telas da aplicação (Splash, Login, Dashboard, Listagem, Formulário)
 │   └── componentes→ Componentes reutilizáveis (Cards, Botões, etc.)

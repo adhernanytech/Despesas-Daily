@@ -1,4 +1,4 @@
-package com.universidade.project_form.ui.telas
+package com.universidade.project_form.ui.componentes
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
@@ -10,21 +10,21 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import com.universidade.project_form.modelos.Despesa
+import com.universidade.project_form.modelos.DespesaEntidade
 
 @Composable
-fun DialogEditarProduto(
-    despesa: Despesa,
-    aoConfirmar: (Despesa) -> Unit,
+fun DialogEditarDespesa(
+    despesa: DespesaEntidade,
+    aoConfirmar: (DespesaEntidade) -> Unit,
     aoCancelar: () -> Unit
 ) {
     var nome by remember { mutableStateOf(despesa.nome) }
     var descricao by remember { mutableStateOf(despesa.descricao)}
-    var preco by remember { mutableStateOf(despesa.valor.toString())}
+    var valor by remember { mutableStateOf(despesa.valor.toString()) }
 
     AlertDialog(
         onDismissRequest = aoCancelar,
-        title = { Text("Editar Produto") },
+        title = { Text("Editar despesa") },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState())
@@ -32,19 +32,19 @@ fun DialogEditarProduto(
                 TextField(
                     value = nome,
                     onValueChange = {nome = it},
-                    label = { Text("Nome") }
+                    label = { Text("Despesa") }
                 )
 
                 TextField(
                     value = descricao,
                     onValueChange = { descricao = it },
-                    label = { Text("Descrição") }
+                    label = { Text("Descrição / razão") }
                 )
 
                 TextField(
-                    value = preco,
-                    onValueChange = { preco = it },
-                    label = { Text("Preço") }
+                    value = valor,
+                    onValueChange = { valor = it },
+                    label = { Text("Valor") }
                 )
             }
         },
@@ -55,7 +55,7 @@ fun DialogEditarProduto(
                     despesa.copy(
                         nome = nome,
                         descricao = descricao,
-                        valor = preco.toDoubleOrNull() ?: despesa.valor
+                        valor = valor.toDoubleOrNull() ?: despesa.valor
                     )
                 )
             }) {

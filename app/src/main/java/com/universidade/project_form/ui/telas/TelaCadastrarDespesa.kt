@@ -16,15 +16,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.universidade.project_form.modelos.Categoria
-import com.universidade.project_form.modelos.Despesa
+import com.universidade.project_form.modelos.DespesaEntidade
+import com.universidade.project_form.navigation.Telas
+import com.universidade.project_form.ui.componentes.TelaBase
+import com.universidade.project_form.utilitarios.SessaoUsuario
 import kotlinx.coroutines.launch
 
 @Composable
 fun TelaCadastrarDespesa(
-    aoRegistrarDespesa: (Despesa) -> Unit,
-    aoVoltar: () -> Unit
+    aoRegistrarDespesa: (DespesaEntidade) -> Unit,
+    aoVoltar: () -> Unit,
+    navController: NavHostController
 ) {
 
     // ----- ESTADOS -----
@@ -49,6 +54,7 @@ fun TelaCadastrarDespesa(
     }
 
     Scaffold(
+        modifier = Modifier,
         topBar = {
             TopAppBar(
                 title = { Text("Adicionar Despesa") }
@@ -57,171 +63,194 @@ fun TelaCadastrarDespesa(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Top
-        ) {
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // ========== IMAGEM (opcional) ==========
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clickable { launcher.launch("image/*") },
-                contentAlignment = Alignment.Center
-            ) {
-                if (imagemUri == null) {
-                    Text("Clique para adicionar imagem")
-                } else {
-                    AsyncImage(
-                        model = imagemUri,
-                        contentDescription = "Imagem da despesa",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp),
-                        contentScale = ContentScale.Crop
-                    )
+        TelaBase(
+            aoLogout = {
+                SessaoUsuario.logout()
+                navController.navigate(Telas.Login.rota) {
+                    popUpTo(0)
                 }
             }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(24.dp),
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // ========== NOME ==========
-            OutlinedTextField(
-                value = nome,
-                onValueChange = { nome = it },
-                label = { Text("Nome da despesa") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // ========== CATEGORIA ==========
-            ExposedDropdownMenuBox(
-                expanded = categoriaExpanded,
-                onExpandedChange = { categoriaExpanded = it }
+                verticalArrangement = Arrangement.Top
             ) {
 
-                OutlinedTextField(
-                    value = categoria?.mostrarNome ?: "Selecione a categoria",
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Categoria") },
-                    trailingIcon = {
-                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoriaExpanded)
-                    },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth()
-                )
+                Spacer(modifier = Modifier.height(12.dp))
 
-                ExposedDropdownMenu(
-                    expanded = categoriaExpanded,
-                    onDismissRequest = { categoriaExpanded = false }
+                // ========== IMAGEM (opcional) ==========
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clickable { launcher.launch("image/*") },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Categoria.values().forEach { item ->
-                        DropdownMenuItem(
-                            text = { Text(item.mostrarNome) },
-                            onClick = {
-                                categoria = item
-                                categoriaExpanded = false
-                            }
+                    if (imagemUri == null) {
+                        Text("Clique para adicionar imagem")
+                    } else {
+                        AsyncImage(
+                            model = imagemUri,
+                            contentDescription = "Imagem da despesa",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(180.dp),
+                            contentScale = ContentScale.Crop
                         )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-            // ========== DESCRIÇÃO ==========
-            OutlinedTextField(
-                value = descricao,
-                onValueChange = { descricao = it },
-                label = { Text("Descrição / Razão do gasto") },
-                modifier = Modifier.fillMaxWidth()
-            )
+                // ========== NOME ==========
+                OutlinedTextField(
+                    value = nome,
+                    onValueChange = { nome = it },
+                    label = { Text("Nome da despesa") },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // ========== VALOR ==========
-            OutlinedTextField(
-                value = valor,
-                onValueChange = { valor = it },
-                label = { Text("Valor (AO)") },
-                modifier = Modifier.fillMaxWidth()
-            )
+                // ========== CATEGORIA ==========
+                ExposedDropdownMenuBox(
+                    expanded = categoriaExpanded,
+                    onExpandedChange = { categoriaExpanded = it }
+                ) {
 
-            Spacer(modifier = Modifier.height(24.dp))
+                    OutlinedTextField(
+                        value = categoria?.mostrarNome ?: "Selecione a categoria",
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Categoria") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoriaExpanded)
+                        },
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                    )
 
-
-            Button(
-                onClick = {
-                    when {
-                        nome.isBlank() -> {
-                            scope.launch { snackbarHostState.showSnackbar("Nome não pode estar vazio") }
-                        }
-                        categoria == null -> {
-                            scope.launch { snackbarHostState.showSnackbar("Selecione uma categoria") }
-                        }
-                        valor.toDoubleOrNull() == null -> {
-                            scope.launch { snackbarHostState.showSnackbar("Valor inválido") }
-                        }
-                        else -> {
-                            aoRegistrarDespesa(
-                                Despesa(
-                                    nome = nome,
-                                    categoria = categoria!!.mostrarNome,
-                                    descricao = descricao,
-                                    valor = valor.toDouble(),
-                                    data = System.currentTimeMillis(),
-                                    imagem = imagemUri
-                                )
+                    ExposedDropdownMenu(
+                        expanded = categoriaExpanded,
+                        onDismissRequest = { categoriaExpanded = false }
+                    ) {
+                        Categoria.values().forEach { item ->
+                            DropdownMenuItem(
+                                text = { Text(item.mostrarNome) },
+                                onClick = {
+                                    categoria = item
+                                    categoriaExpanded = false
+                                }
                             )
-
-                            scope.launch { snackbarHostState.showSnackbar("Despesa cadastrada com sucesso!") }
-                            // limpar campos
-                            nome = ""
-                            categoria = null
-                            descricao = ""
-                            valor = ""
-                            imagemUri = null
-
-                            scope.launch {
-                                snackbarHostState.showSnackbar(
-                                    message = "Cadastrado com sucesso!",
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
                         }
                     }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text("Cadastrar")
-            }
+                }
 
-            Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Botão para limpar os campos
-            OutlinedButton(
-                onClick = {
-                    // limpar campos
-                    nome = ""
-                    categoria = null
-                    descricao = ""
-                    valor = ""
-                    imagemUri = null
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Text("Limpar")
+                // ========== DESCRIÇÃO ==========
+                OutlinedTextField(
+                    value = descricao,
+                    onValueChange = { descricao = it },
+                    label = { Text("Descrição / Razão do gasto") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // ========== VALOR ==========
+                OutlinedTextField(
+                    value = valor,
+                    onValueChange = { valor = it },
+                    label = { Text("Valor (AO)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+
+                Button(
+                    onClick = {
+                        when {
+                            nome.isBlank() -> {
+                                scope.launch { snackbarHostState.showSnackbar("Nome não pode estar vazio") }
+                            }
+                            categoria == null -> {
+                                scope.launch { snackbarHostState.showSnackbar("Selecione uma categoria") }
+                            }
+                            valor.toDoubleOrNull() == null -> {
+                                scope.launch { snackbarHostState.showSnackbar("Valor inválido") }
+                            }
+                            else -> {
+                                val usuarioId = SessaoUsuario.usuarioId
+
+                                if (usuarioId == null) {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Sessão expirada. Faça login novamente.")
+                                    }
+                                    aoVoltar()
+                                    return@Button
+                                }
+
+                                aoRegistrarDespesa(
+                                    DespesaEntidade(
+                                        nome = nome,
+                                        categoria = categoria!!.mostrarNome,
+                                        descricao = descricao,
+                                        valor = valor.toDouble(),
+                                        dataregisto = System.currentTimeMillis(),
+                                        imagem = imagemUri,
+                                        usuarioId = usuarioId
+                                    )
+                                )
+
+
+                                scope.launch { snackbarHostState.showSnackbar("Despesa cadastrada com sucesso!") }
+                                // limpar campos
+                                nome = ""
+                                categoria = null
+                                descricao = ""
+                                valor = ""
+                                imagemUri = null
+
+                                scope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "Cadastrado com sucesso!",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Cadastrar")
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Botão para limpar os campos
+                OutlinedButton(
+                    onClick = {
+                        // limpar campos
+                        nome = ""
+                        categoria = null
+                        descricao = ""
+                        valor = ""
+                        imagemUri = null
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Limpar")
+                }
             }
         }
     }

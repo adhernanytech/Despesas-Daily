@@ -1,33 +1,37 @@
-@file:Suppress("LocalVariableName")
-
 package com.universidade.project_form
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
-import com.universidade.project_form.ui.theme.Project_form
+import com.universidade.project_form.dados.database.DespesaDatabase
+import com.universidade.project_form.dados.repository.DespesaRepository
+import com.universidade.project_form.dados.repository.UsuarioRepository
+
+import com.universidade.project_form.navigation.AppNavegacaoTelas
 
 class MainActivity : ComponentActivity() {
+
+    lateinit var despesaRepository: DespesaRepository
+    lateinit var usuarioRepository: UsuarioRepository
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Instancia o banco de dados usando singleton
+        val db = DespesaDatabase.getDatabase(this)
+
+        // Instancia os repositorios usando o DAO do banco
+        despesaRepository = DespesaRepository(db.despesaDao())
+        usuarioRepository = UsuarioRepository(db.usuarioDao())
+
         setContent {
             val navController = rememberNavController()
-
-            AppNavegacaoTelas(controladorNav = navController)
+            AppNavegacaoTelas(
+                navController = navController,
+                despesaRepository,
+                usuarioRepository
+            )
         }
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun FormCadastroPreview() {
-    Project_form {
-        // TelaCadastro(modifier = Modifier)
-        AppNavegacaoTelas(rememberNavController())
     }
 }

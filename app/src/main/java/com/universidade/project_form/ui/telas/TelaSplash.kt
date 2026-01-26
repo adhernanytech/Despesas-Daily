@@ -18,15 +18,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.universidade.project_form.navigation.Telas
+import com.universidade.project_form.utilitarios.SessaoUsuario
 import kotlinx.coroutines.delay
 
 @Composable
 fun TelaSplash (
-    aoFinalizar: () -> Unit
+    navController: NavController
 ) {
     LaunchedEffect(Unit) {
-        delay(1800)
-        aoFinalizar()
+        delay(1800) // Tempo da splash
+
+        // Verifica se usuário está logado
+        if (SessaoUsuario.usuarioId != null) {
+            // Usuário logado → vai para Dashboard
+            navController.navigate(Telas.Despesa.rota) {
+                popUpTo(0)
+            }
+        } else {
+            navController.navigate(Telas.Login.rota) {
+                popUpTo(0)
+            }
+        }
     }
 
     Box(
